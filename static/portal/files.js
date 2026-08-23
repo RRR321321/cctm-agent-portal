@@ -6,7 +6,6 @@
   var listEl = document.getElementById("fm-list");
   var crumbEl = document.getElementById("fm-crumb");
   var statusEl = document.getElementById("fm-status");
-  var noteEl = document.getElementById("fm-note");
   var inputFile = document.getElementById("fm-input-file");
   var inputDir = document.getElementById("fm-input-dir");
   var modal = document.getElementById("fm-modal");
@@ -56,7 +55,6 @@
       .then(function (d) { return d.entries || []; });
   }
   function load() {
-    noteEl.hidden = state.area !== "shared";
     dirCache = {};
     renderCrumb();
     listEl.innerHTML = '<tr><td colspan="4" class="muted">加载中…</td></tr>';

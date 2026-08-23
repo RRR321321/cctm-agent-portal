@@ -161,11 +161,6 @@ body.stats-page { padding-top: 48px; background: #0b1020; }
 .fm-btn-ghost:hover { background: #182236; filter: none; }
 .fm-btn-danger { background: #b91c1c; }
 .fm-btn-danger:hover { filter: brightness(1.15); }
-.fm-note {
-  color: #fbbf24; font-size: 13px; margin: -4px 0 12px; padding: 8px 14px;
-  background: rgba(251, 191, 36, .08); border: 1px solid rgba(251, 191, 36, .25);
-  border-radius: 10px;
-}
 .fm-wrap { overflow-x: auto; }
 .fm-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .fm-table th {

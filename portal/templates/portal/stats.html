@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>agent 统计 - CCTM AGENT</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/portal/portal.css">
+</head>
+<body class="stats-page">
+  <div id="cctm-nav">
+    <span class="cctm-brand">CCTM AI 平台</span>
+    <div class="cctm-tabs">
+      <a class="cctm-tab" href="/">CCTM AGENT</a>
+      <a class="cctm-tab active" href="/stats/">agent 统计</a>
+      <a class="cctm-tab" href="/files/">文件管理</a>
+      {% if request.user.is_staff %}<a class="cctm-tab" href="/users/">用户管理</a>{% endif %}
+    </div>
+    <div class="cctm-user">
+      <span class="cctm-name">{{ me }}</span>
+      <a class="cctm-link" href="/change-password/">修改密码</a>
+      <a class="cctm-link" href="/logout/">退出</a>
+    </div>
+  </div>
+
+  <main class="stats-main">
+    <div class="stats-total">
+      <span class="stats-total-label">历史累计使用 token 总量</span>
+      <span class="stats-total-num" id="total-num">…</span>
+      <span class="stats-total-sub" id="total-sub"></span>
+    </div>
+
+    <div class="sat-warn" id="sat-warn" hidden>agent当前正在为很多人工作，达到饱和状态，建议稍后再发送消息。</div>
+
+    <div class="stats-grid">
+      <section class="panel">
+        <h2>近 7 天 token 使用排名</h2>
+        <ol id="rank-list" class="rank-list"></ol>
+      </section>
+
+      <section class="panel">
+        <h2>当前使用人数</h2>
+        <div class="active-big"><span id="active-num">0</span><span class="active-cap" id="active-cap"></span></div>
+        <ul id="active-list" class="active-list"></ul>
+      </section>
+
+      <section class="panel">
+        <h2>近 7 天 token 走势（每小时）</h2>
+        <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
+        <noscript><p class="muted">需要启用 JavaScript 查看图表</p></noscript>
+      </section>
+    </div>
+  </main>
+
+  {{ data|json_script:"stats-data" }}
+  <script src="/static/portal/vendor/chart.umd.min.js"></script>
+  <script src="/static/portal/stats.js"></script>
+</body>
+</html>

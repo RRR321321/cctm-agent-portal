@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用户管理 - CCTM AGENT</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/portal/portal.css">
+</head>
+<body class="stats-page">
+  <div id="cctm-nav">
+    <span class="cctm-brand">CCTM AI 平台</span>
+    <div class="cctm-tabs">
+      <a class="cctm-tab" href="/">CCTM AGENT</a>
+      <a class="cctm-tab" href="/stats/">agent 统计</a>
+      <a class="cctm-tab" href="/files/">文件管理</a>
+      <a class="cctm-tab active" href="/users/">用户管理</a>
+    </div>
+    <div class="cctm-user">
+      <span class="cctm-name">{{ me }}</span>
+      <a class="cctm-link" href="/change-password/">修改密码</a>
+      <a class="cctm-link" href="/logout/">退出</a>
+    </div>
+  </div>
+
+  <main class="stats-main">
+    <div class="panel fm-wrap">
+      <table class="fm-table">
+        <thead>
+          <tr>
+            <th>用户</th>
+            <th class="fm-col-time">注册时间</th>
+            <th class="fm-col-time">最近活跃</th>
+            <th class="fm-col-size">累计 token</th>
+            <th>状态</th>
+            <th class="fm-col-op">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr class="fm-row">
+            <td class="fm-name">
+              <span class="cctm-avatar" style="background:{{ r.color }}">{{ r.name|first|upper }}</span>
+              {{ r.name }}
+            </td>
+            <td class="fm-col-time">{{ r.created }}</td>
+            <td class="fm-col-time">{{ r.last_active }}</td>
+            <td class="fm-col-size">{{ r.total }}</td>
+            <td>{% if r.busy %}<span class="green-dot"></span> 在用{% else %}<span class="muted">空闲</span>{% endif %}</td>
+            <td class="fm-col-op">
+              <button class="fm-btn fm-btn-danger um-del" data-name="{{ r.name }}">删除</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="muted">还没有注册用户</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      function getCookie(name) {
+        var m = document.cookie.match(new RegExp("(^|;\\s*)" + name + "=([^;]*)"));
+        return m ? decodeURIComponent(m[2]) : "";
+      }
+      document.querySelectorAll(".um-del").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var name = b.getAttribute("data-name");
+          if (!confirm('确定删除用户 "' + name + '"？\n将删除：账号、工作区文件夹及其中所有文件、全部用量记录。\n不可恢复！')) return;
+          var fd = new FormData();
+          fd.append("name", name);
+          fetch("/users/api/delete", {
+            method: "POST", body: fd,
+            headers: { "X-CSRFToken": getCookie("csrftoken") },
+          }).then(function (r) { return r.json(); }).then(function (d) {
+            if (d.error) { alert("删除失败：" + d.error); return; }
+            location.reload();
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+/* 注入到 webshell 页面：顶部导航条 + 页面下移 + 思考档位禁用样式 */
+html { scroll-padding-top: 48px; }
+body { padding-top: 48px !important; }
+
+/* webshell 应用根容器适配（如选择器变化，升级手册要求回归此处） */
+#root, #app { height: calc(100vh - 48px) !important; }
+
+#cctm-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 48px; z-index: 99999;
+  background: #111827; color: #e5e7eb; display: grid;
+  grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 16px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+}
+#cctm-nav .cctm-brand {
+  grid-column: 1; justify-self: start; font-weight: 800; font-size: 15px;
+  color: #fff; letter-spacing: .5px;
+}
+#cctm-nav .cctm-tabs { grid-column: 2; display: flex; gap: 8px; }
+#cctm-nav .cctm-tab {
+  color: #9ca3af; text-decoration: none; padding: 6px 14px; border-radius: 8px;
+  font-size: 14px; font-weight: 600;
+}
+#cctm-nav .cctm-tab.active { background: #2563eb; color: #fff; }
+#cctm-nav .cctm-tab:hover:not(.active) { background: #1f2937; color: #e5e7eb; }
+#cctm-nav .cctm-user { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+#cctm-nav .cctm-avatar {
+  width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center;
+  justify-content: center; color: #fff; font-weight: 700; font-size: 13px;
+}
+#cctm-nav .cctm-link { color: #9ca3af; text-decoration: none; }
+#cctm-nav .cctm-link:hover { color: #fff; }
+
+/* 被禁用的思考档位（xhigh/max） */
+.cctm-disabled-opt {
+  opacity: .35 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  filter: grayscale(.6);
+}

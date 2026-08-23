@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文件管理 - CCTM AGENT</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/portal/portal.css">
+</head>
+<body class="stats-page">
+  <div id="cctm-nav">
+    <span class="cctm-brand">CCTM AI 平台</span>
+    <div class="cctm-tabs">
+      <a class="cctm-tab" href="/">CCTM AGENT</a>
+      <a class="cctm-tab" href="/stats/">agent 统计</a>
+      <a class="cctm-tab active" href="/files/">文件管理</a>
+      {% if request.user.is_staff %}<a class="cctm-tab" href="/users/">用户管理</a>{% endif %}
+    </div>
+    <div class="cctm-user">
+      <span class="cctm-name">{{ me }}</span>
+      <a class="cctm-link" href="/change-password/">修改密码</a>
+      <a class="cctm-link" href="/logout/">退出</a>
+    </div>
+  </div>
+
+  <main class="stats-main">
+    <div class="fm-toolbar panel">
+      <div class="fm-areas">
+        {% if has_mine %}<button class="fm-area active" data-area="mine">我的文件</button>{% endif %}
+        <button class="fm-area{% if not has_mine %} active{% endif %}" data-area="shared">公共区</button>
+      </div>
+      <div class="fm-crumb" id="fm-crumb"></div>
+      <div class="fm-actions" id="fm-actions">
+        <span class="fm-status" id="fm-status"></span>
+        <button class="fm-btn fm-btn-ghost" id="fm-upload-file">上传文件</button>
+        <button class="fm-btn fm-btn-ghost" id="fm-upload-dir">上传文件夹</button>
+        <input type="file" id="fm-input-file" multiple hidden>
+        <input type="file" id="fm-input-dir" webkitdirectory multiple hidden>
+      </div>
+    </div>
+
+    <div class="fm-note" id="fm-note" hidden>公共区：可上传、可删除，不可下载。</div>
+
+    <div class="panel fm-wrap">
+      <table class="fm-table">
+        <thead>
+          <tr><th>名称</th><th class="fm-col-size">大小</th><th class="fm-col-time">修改时间</th><th class="fm-col-op">操作</th></tr>
+        </thead>
+        <tbody id="fm-list"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="fm-modal" id="fm-modal" hidden>
+    <div class="fm-modal-card">
+      <div class="fm-modal-title">同名文件已存在</div>
+      <div class="fm-modal-body" id="fm-modal-body"></div>
+      <div class="fm-modal-actions">
+        <button class="fm-btn" id="fm-conf-over">覆盖</button>
+        <button class="fm-btn fm-btn-ghost" id="fm-conf-keep">加后缀保留两者</button>
+        <button class="fm-btn fm-btn-ghost" id="fm-conf-skip">跳过该文件</button>
+      </div>
+      <label class="fm-modal-check"><input type="checkbox" id="fm-conf-all"> 后续同名冲突都按此选择处理</label>
+    </div>
+  </div>
+
+  <script>window.FM_HAS_MINE = {{ has_mine|yesno:"1,0" }};</script>
+  <script src="/static/portal/files.js"></script>
+</body>
+</html>

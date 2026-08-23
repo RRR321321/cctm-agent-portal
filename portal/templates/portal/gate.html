@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCTM AGENT</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/portal/portal.css">
+</head>
+<body class="gate">
+  <!-- 下层：webshell 预览（骨架示意，发暗） -->
+  <div class="shell-preview" aria-hidden="true">
+    <div class="sp-nav"><span class="sp-tab active">CCTM AGENT</span><span class="sp-tab">agent 统计</span><span class="sp-right"></span></div>
+    <div class="sp-body">
+      <div class="sp-side">
+        <div class="sp-btn"></div>
+        <div class="sp-side-item"></div>
+        <div class="sp-side-item"></div>
+        <div class="sp-side-item"></div>
+      </div>
+      <div class="sp-main">
+        <div class="sp-msg"></div>
+        <div class="sp-msg short"></div>
+        <div class="sp-input"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上层：登录遮罩 -->
+  <div class="gate-overlay">
+    <form class="gate-card" method="post" action="/">
+      {% csrf_token %}
+      <div class="gate-logo">C</div>
+      <h1>CCTM AGENT</h1>
+      {% if error %}<div class="err">{{ error }}</div>{% endif %}
+      <label>用户名
+        <input name="username" autocomplete="username" required autofocus>
+      </label>
+      <label>密码
+        <input name="password" type="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit">登录</button>
+      <div class="gate-links">
+        <a href="/register/">注册</a>
+        <a href="/change-password/">修改密码</a>
+      </div>
+      <p class="hint">注册请用名字拼音，不能有空格</p>
+    </form>
+  </div>
+</body>
+</html>

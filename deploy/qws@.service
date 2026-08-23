@@ -1,0 +1,46 @@
+[Unit]
+Description=CCTM Agent instance for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=qws-%i
+Group=cctm
+WorkingDirectory=/srv/cctm_agent_files/%i
+EnvironmentFile=/etc/cctm/instances/%i.env
+Environment=HOME=/home/qws-%i
+Environment=QWEN_CODE_SYSTEM_SETTINGS_PATH=/etc/cctm/policy/%i.json
+Environment=QWEN_DISABLED_SLASH_COMMANDS=model,auth
+ExecStart=/opt/cctm/node/bin/node --expose-gc --max-old-space-size=2048 /opt/cctm/qwen/current/cli.js serve --hostname 127.0.0.1 --port ${QWEN_PORT} --require-auth --workspace /srv/cctm_agent_files/%i --max-sessions 8 --channel-idle-timeout-ms 300000 --allow-origin http://192.168.2.88:8081
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=120
+TimeoutStopSec=30
+KillMode=mixed
+# 组可读写（工作区 2770+setgid，组=用户私有组）：门户文件管理页 borui 经组权限下载/上传
+UMask=0002
+
+# ---- 沙箱：只能写自己的家目录与工作区；内网全封，公网放行 ----
+# 读隔离靠各家目录 700；写隔离靠 ProtectSystem=strict（全盘只读）+ 白名单
+ProtectSystem=strict
+ReadWritePaths=/home/qws-%i /srv/cctm_agent_files/%i
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RemoveIPC=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 169.254.0.0/16
+
+[Install]
+WantedBy=multi-user.target

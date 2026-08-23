@@ -1,0 +1,146 @@
+#!/bin/bash
+# cctm-provision <username> — 开通一个用户实例（root 执行；由 Django 经 sudoers 调用）
+# 产出：OS 用户 qws-<名>、工作区、HOME 骨架、托管策略、单元环境、Django 注册表
+set -e
+NAME="$1"
+if [[ ! "$NAME" =~ ^[a-z][a-z0-9_-]{0,30}$ ]]; then
+  echo "ERR invalid username"; exit 2
+fi
+U="qws-$NAME"
+REG=/etc/cctm/registry/$NAME.conf
+if id "$U" >/dev/null 2>&1; then
+  echo "EXISTS NAME=$NAME"
+  [ -f "$REG" ] && cat "$REG"
+  exit 3
+fi
+
+# 分配端口（4301 起）
+BASE=4301; PORT=""
+for p in $(seq $BASE $((BASE+300))); do
+  if ! grep -qrs "PORT=$p\$" /etc/cctm/registry/ 2>/dev/null; then PORT=$p; break; fi
+done
+[ -n "$PORT" ] || { echo "ERR no free port"; exit 4; }
+
+TOKEN=$(openssl rand -hex 24)
+MODEL_KEY=$(openssl rand -hex 16)
+
+# -U 建用户私有组（用于实例环境文件授权），再挂到 cctm 组（共享 skills）
+useradd -m -d "/home/$U" -s /usr/sbin/nologin -U "$U"
+usermod -aG cctm "$U"
+# 门户运行用户进私有组：文件管理页经组权限浏览/下载/上传工作区
+usermod -aG "$U" "${PORTAL_USER:-borui}"
+
+# 工作区 2770+setgid：新文件继承私有组；qws@.service UMask=0002 保证组可读写
+mkdir -p "/srv/cctm_agent_files/$NAME"
+chown "$U:$U" "/srv/cctm_agent_files/$NAME"
+chmod 2770 "/srv/cctm_agent_files/$NAME"
+
+# skill 共享：项目级 skill 目录也指向共享目录，agent 建的 skill 全员可见
+# （用户级 ~/.qwen/skills 软链见下方；qwen-code 同名 skill 按名去重不重复）
+mkdir -p "/srv/cctm_agent_files/$NAME/.qwen"
+chown "$U:$U" "/srv/cctm_agent_files/$NAME/.qwen"
+ln -sfn /srv/cctm_shared/skills "/srv/cctm_agent_files/$NAME/.qwen/skills"
+
+mkdir -p "/home/$U/.qwen"
+cat > "/home/$U/.qwen/settings.json" <<EOF
+{
+  "env": {
+    "CCTM_MODEL_KEY": "$MODEL_KEY"
+  },
+  "modelProviders": {
+    "openai": [
+      {
+        "id": "qwen3.8-27b",
+        "name": "Qwen3.8-27B (CCTM)",
+        "baseUrl": "http://127.0.0.1:8081/model/$NAME/v1",
+        "envKey": "CCTM_MODEL_KEY",
+        "generationConfig": {
+          "contextWindowSize": 100000,
+          "reasoning": {
+            "effort": "low"
+          }
+        }
+      }
+    ]
+  },
+  "security": {
+    "auth": {
+      "selectedType": "openai"
+    }
+  },
+  "model": {
+    "name": "qwen3.8-27b"
+  },
+  "\$version": 4
+}
+EOF
+chown -R "$U:cctm" "/home/$U/.qwen"
+ln -sfn /srv/cctm_shared/skills "/home/$U/.qwen/skills"
+chmod 700 "/home/$U"
+
+# 托管策略：合并优先级最高，锁死模型/上下文/命令
+cat > "/etc/cctm/policy/$NAME.json" <<EOF
+{
+  "modelProviders": {
+    "openai": [
+      {
+        "id": "qwen3.8-27b",
+        "name": "Qwen3.8-27B (CCTM)",
+        "baseUrl": "http://127.0.0.1:8081/model/$NAME/v1",
+        "envKey": "CCTM_MODEL_KEY",
+        "generationConfig": {
+          "contextWindowSize": 100000,
+          "reasoning": {
+            "effort": "low"
+          }
+        }
+      }
+    ]
+  },
+  "security": {
+    "auth": {
+      "selectedType": "openai"
+    }
+  },
+  "model": {
+    "name": "qwen3.8-27b"
+  },
+  "slashCommands": {
+    "disabled": ["model", "auth"]
+  },
+  "general": {
+    "enableAutoUpdate": false,
+    "disableAutoUpdate": true
+  },
+  "telemetry": {
+    "enabled": false
+  }
+}
+EOF
+chmod 644 "/etc/cctm/policy/$NAME.json"
+
+# 单元环境（仅 daemon 需要：端口+实例 token）
+cat > "/etc/cctm/instances/$NAME.env" <<EOF
+QWEN_PORT=$PORT
+QWEN_SERVER_TOKEN=$TOKEN
+EOF
+chown root:"$U" "/etc/cctm/instances/$NAME.env"
+chmod 640 "/etc/cctm/instances/$NAME.env"
+
+# Django 注册表（borui 经 cctmadm 组可读；qws 用户不在此组，互不可读）
+cat > "$REG" <<EOF
+NAME=$NAME
+USER=$U
+PORT=$PORT
+TOKEN=$TOKEN
+MODEL_KEY=$MODEL_KEY
+EOF
+chown root:cctmadm "$REG"
+chmod 640 "$REG"
+
+echo "OK NAME=$NAME PORT=$PORT"
+# 注册表对 Django 进程可能不可读（组会话滞后），关键值直接走 stdout
+echo "NAME=$NAME"
+echo "PORT=$PORT"
+echo "TOKEN=$TOKEN"
+echo "MODEL_KEY=$MODEL_KEY"

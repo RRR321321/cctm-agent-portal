@@ -1,0 +1,7 @@
+db.sqlite3
+.secret_key
+.dgx_key
+venv/
+err.log
+__pycache__/
+*.pyc

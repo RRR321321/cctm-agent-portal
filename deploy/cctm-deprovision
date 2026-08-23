@@ -1,0 +1,24 @@
+#!/bin/bash
+# cctm-deprovision <username> — 彻底删除一个用户实例（root 执行；Django 经 sudoers 调用）
+# 删：qws 实例服务、OS 用户+家目录、工作区及全部文件、registry/policy/instances 配置、门户用户组关系
+set -e
+NAME="$1"
+if [[ ! "$NAME" =~ ^[a-z][a-z0-9_-]{0,30}$ ]]; then
+  echo "ERR invalid username"; exit 2
+fi
+U="qws-$NAME"
+id "$U" >/dev/null 2>&1 || { echo "ERR no such user $U"; exit 3; }
+
+PORTAL_USER="${PORTAL_USER:-borui}"
+
+systemctl stop "qws@$NAME.service" 2>/dev/null || true
+systemctl reset-failed "qws@$NAME.service" 2>/dev/null || true
+
+# 门户用户退出该私有组（否则 userdel 删组时残留）
+gpasswd -d "$PORTAL_USER" "$U" >/dev/null 2>&1 || true
+
+userdel -r "$U" 2>/dev/null || true
+rm -rf "/srv/cctm_agent_files/$NAME"
+rm -f "/etc/cctm/registry/$NAME.conf" "/etc/cctm/policy/$NAME.json" "/etc/cctm/instances/$NAME.env"
+
+echo "OK deprovisioned $NAME"

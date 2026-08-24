@@ -12,7 +12,8 @@ def _read_secret(path, default=""):
 
 SECRET_KEY = _read_secret(BASE_DIR / ".secret_key", "cctm-insecure-dev-key")
 DEBUG = False
-ALLOWED_HOSTS = ["192.168.2.88", "127.0.0.1", "localhost"]
+# IT 有公网转发，域名不固定，放开 Host 校验（DEBUG=False，CSRF 仍生效）
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",

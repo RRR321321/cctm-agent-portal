@@ -79,24 +79,6 @@
         if (BAD.test((opts[o].textContent || "").trim())) opts[o].disabled = true;
       }
     }
-    lockModelConfig(scope);
-  }
-
-  // ---- 模型自配置禁用：+ Add Model / Delete / Set current 置灰 ----
-  function lockModelConfig(scope) {
-    var btns = scope.querySelectorAll("button");
-    for (var i = 0; i < btns.length; i++) {
-      var t = (btns[i].textContent || "").trim();
-      if (/^\+?\s*Add Model$/i.test(t) || /^Delete$/i.test(t) || /^Set current$/i.test(t)) {
-        btns[i].setAttribute("disabled", "disabled");
-        btns[i].setAttribute("aria-disabled", "true");
-        btns[i].classList.add("cctm-disabled-opt");
-        btns[i].addEventListener("click", function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-        }, true);
-      }
-    }
   }
 
   // ---- 文案替换（沿用旧版 bundle 补丁改过的字，DOM 层实现，升级不丢） ----

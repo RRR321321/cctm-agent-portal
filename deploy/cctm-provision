@@ -78,36 +78,10 @@ chown -R "$U:cctm" "/home/$U/.qwen"
 ln -sfn /srv/cctm_shared/skills "/home/$U/.qwen/skills"
 chmod 700 "/home/$U"
 
-# 托管策略：合并优先级最高，锁死模型/上下文/命令
+# 托管策略：系统层只管行为/瘦身，不锁模型——默认模型在用户层 settings，
+# 用户可经 /auth /model 自助加云端 provider（key 存自家 HOME，天然隔离）
 cat > "/etc/cctm/policy/$NAME.json" <<EOF
 {
-  "modelProviders": {
-    "openai": [
-      {
-        "id": "qwen3.8-27b",
-        "name": "Qwen3.8-27B (CCTM)",
-        "baseUrl": "http://127.0.0.1:8081/model/$NAME/v1",
-        "envKey": "CCTM_MODEL_KEY",
-        "generationConfig": {
-          "contextWindowSize": 100000,
-          "reasoning": {
-            "effort": "low"
-          }
-        }
-      }
-    ]
-  },
-  "security": {
-    "auth": {
-      "selectedType": "openai"
-    }
-  },
-  "model": {
-    "name": "qwen3.8-27b"
-  },
-  "slashCommands": {
-    "disabled": ["model", "auth"]
-  },
   "general": {
     "enableAutoUpdate": false,
     "disableAutoUpdate": true

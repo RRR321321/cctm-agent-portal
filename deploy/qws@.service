@@ -10,7 +10,6 @@ WorkingDirectory=/srv/cctm_agent_files/%i
 EnvironmentFile=/etc/cctm/instances/%i.env
 Environment=HOME=/home/qws-%i
 Environment=QWEN_CODE_SYSTEM_SETTINGS_PATH=/etc/cctm/policy/%i.json
-Environment=QWEN_DISABLED_SLASH_COMMANDS=model,auth
 ExecStart=/opt/cctm/node/bin/node --expose-gc --max-old-space-size=2048 /opt/cctm/qwen/current/cli.js serve --hostname 127.0.0.1 --port ${QWEN_PORT} --require-auth --workspace /srv/cctm_agent_files/%i --max-sessions 8 --channel-idle-timeout-ms 300000 --allow-origin http://192.168.2.88:8081
 Restart=on-failure
 RestartSec=3

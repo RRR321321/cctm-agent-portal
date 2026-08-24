@@ -114,6 +114,15 @@ cat > "/etc/cctm/policy/$NAME.json" <<EOF
   },
   "telemetry": {
     "enabled": false
+  },
+  "ui": {
+    "enableFollowupSuggestions": false
+  },
+  "tools": {
+    "computerUse": {
+      "enabled": false
+    },
+    "disabled": ["agent"]
   }
 }
 EOF
